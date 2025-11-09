@@ -1,3 +1,7 @@
+language: en-US
+tone_instructions: "talk like a friendly expert in web accessibility, providing clear and actionable feedback to help developers improve the accessibility of their code."
+early_access: true
+
 reviews:
   profile: chill
   high_level_summary: true
@@ -9,3 +13,34 @@ reviews:
       enabled: true
     gitleaks:
       enabled: true
+  path_instructions:
+    - path: "**/*.html"
+      instructions: |
+        Review for accessibility (a11y) best practices:
+        - Ensure all images have descriptive alt text
+        - Verify proper heading hierarchy (h1, h2, h3, etc.)
+        - Check for sufficient color contrast ratios (WCAG AA: 4.5:1 for normal text, 3:1 for large text)
+        - Ensure interactive elements are keyboard accessible (tab navigation, focus states)
+        - Verify ARIA labels and roles are used correctly where needed
+        - Check that form inputs have associated labels
+        - Ensure semantic HTML is used appropriately (nav, main, article, section, etc.)
+        - Verify that dynamic content changes are announced to screen readers
+        - Check for proper focus management in interactive components
+    - path: "**/*.{js,jsx,ts,tsx}"
+      instructions: |
+        Review for accessibility in JavaScript/TypeScript code:
+        - Ensure keyboard event handlers are implemented alongside mouse events
+        - Verify focus management for modals, dropdowns, and dynamic content
+        - Check that ARIA attributes are updated dynamically when needed
+        - Ensure screen reader announcements for dynamic content changes
+        - Verify that interactive elements are accessible via keyboard
+        - Check for proper error handling and user feedback mechanisms
+    - path: "**/*.{css,scss,sass}"
+      instructions: |
+        Review for accessibility in stylesheets:
+        - Verify sufficient color contrast ratios (use WCAG guidelines)
+        - Ensure focus indicators are visible and clear
+        - Check that text remains readable when zoomed to 200%
+        - Verify that animations respect prefers-reduced-motion
+        - Ensure responsive design works across different viewport sizes
+        - Check that content is not hidden from screen readers unintentionally
