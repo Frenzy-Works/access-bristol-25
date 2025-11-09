@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Chat Interface</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex flex-col">
+    <!-- Header -->
+    <header class="bg-blue-600 text-white py-4 px-6 shadow-lg">
+        <h1 class="text-2xl font-bold">Gemini Chat Interface</h1>
+    </header>
+
+    <!-- Main Chat Container -->
+    <main class="flex-1 flex flex-col max-w-4xl w-full mx-auto p-4 overflow-hidden">
+        <!-- Chat Messages Area -->
+        <div id="chat-container" class="flex-1 bg-white rounded-lg shadow-md p-4 mb-4 overflow-y-auto">
+            <div id="messages" class="space-y-4">
+                <!-- Welcome message -->
+                <div class="flex justify-start">
+                    <div class="bg-gray-200 rounded-lg px-4 py-2 max-w-md">
+                        <p class="text-gray-800">Hello! I'm Gemini. How can I help you today?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="bg-white rounded-lg shadow-md p-4">
+            <form id="chat-form" class="flex gap-2">
+                <input 
+                    type="text" 
+                    id="message-input" 
+                    placeholder="Type your message here..." 
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    autocomplete="off"
+                    required
+                >
+                <button 
+                    type="submit" 
+                    id="send-button"
+                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                >
+                    Send
+                </button>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const messageInput = document.getElementById('message-input');
+        const messagesContainer = document.getElementById('messages');
+        const sendButton = document.getElementById('send-button');
+
+        // Add user message to chat
+        function addMessage(text, isUser) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `flex ${isUser ? 'justify-end' : 'justify-start'}`;
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.className = `rounded-lg px-4 py-2 max-w-md ${
+                isUser 
+                    ? 'bg-blue-600 text-white' 
+                    : 'bg-gray-200 text-gray-800'
+            }`;
+            
+            const messageText = document.createElement('p');
+            messageText.textContent = text;
+            messageText.style.whiteSpace = 'pre-wrap';
+            
+            messageBubble.appendChild(messageText);
+            messageDiv.appendChild(messageBubble);
+            messagesContainer.appendChild(messageDiv);
+            
+            // Scroll to bottom
+            messagesContainer.parentElement.scrollTop = messagesContainer.parentElement.scrollHeight;
+        }
+
+        // Add loading indicator
+        function addLoadingIndicator() {
+            const loadingDiv = document.createElement('div');
+            loadingDiv.id = 'loading-indicator';
+            loadingDiv.className = 'flex justify-start';
+            loadingDiv.innerHTML = `
+                <div class="bg-gray-200 rounded-lg px-4 py-2">
+                    <div class="flex space-x-2">
+                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                    </div>
+                </div>
+            `;
+            messagesContainer.appendChild(loadingDiv);
+            messagesContainer.parentElement.scrollTop = messagesContainer.parentElement.scrollHeight;
+        }
+
+        // Remove loading indicator
+        function removeLoadingIndicator() {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) {
+                loadingIndicator.remove();
+            }
+        }
+
+        // Handle form submission
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, true);
+            
+            // Clear input and disable button
+            messageInput.value = '';
+            sendButton.disabled = true;
+            
+            // Add loading indicator
+            addLoadingIndicator();
+            
+            try {
+                // Send message to backend
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Remove loading indicator
+                removeLoadingIndicator();
+                
+                if (response.ok) {
+                    // Add bot response to chat
+                    addMessage(data.response, false);
+                } else {
+                    // Show error message
+                    addMessage(`Error: ${data.error}`, false);
+                }
+            } catch (error) {
+                removeLoadingIndicator();
+                addMessage(`Error: ${error.message}`, false);
+            } finally {
+                // Re-enable button
+                sendButton.disabled = false;
+                messageInput.focus();
+            }
+        });
+
+        // Focus input on load
+        messageInput.focus();
+    </script>
+</body>
+</html>
