@@ -8,7 +8,7 @@
 </head>
 <body class="bg-gray-100 h-screen flex flex-col">
     <!-- Header -->
-    <header class="bg-blue-600 text-white py-4 px-6 shadow-lg">
+    <header class="bg-blue-700 text-white py-4 px-6 shadow-lg">
         <h1 class="text-2xl font-bold">Gemini Chat Interface</h1>
     </header>
 
@@ -19,8 +19,8 @@
             <div id="messages" class="space-y-4">
                 <!-- Welcome message -->
                 <div class="flex justify-start">
-                    <div class="bg-gray-200 rounded-lg px-4 py-2 max-w-md">
-                        <p class="text-gray-800">Hello! I'm Gemini. How can I help you today?</p>
+                    <div class="bg-gray-100 rounded-lg px-4 py-2 max-w-md border border-gray-300">
+                        <p class="text-gray-900">Hello! I'm Gemini. How can I help you today?</p>
                     </div>
                 </div>
             </div>
@@ -33,14 +33,14 @@
                     type="text" 
                     id="message-input" 
                     placeholder="Type your message here..." 
-                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     autocomplete="off"
                     required
                 >
                 <button 
                     type="submit" 
                     id="send-button"
-                    class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    class="bg-blue-700 text-white px-6 py-2 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                     Send
                 </button>
@@ -62,8 +62,8 @@
             const messageBubble = document.createElement('div');
             messageBubble.className = `rounded-lg px-4 py-2 max-w-md ${
                 isUser 
-                    ? 'bg-blue-600 text-white' 
-                    : 'bg-gray-200 text-gray-800'
+                    ? 'bg-blue-700 text-white' 
+                    : 'bg-gray-100 text-gray-900'
             }`;
             
             const messageText = document.createElement('p');
@@ -84,11 +84,11 @@
             loadingDiv.id = 'loading-indicator';
             loadingDiv.className = 'flex justify-start';
             loadingDiv.innerHTML = `
-                <div class="bg-gray-200 rounded-lg px-4 py-2">
+                <div class="bg-gray-100 rounded-lg px-4 py-2 border border-gray-300">
                     <div class="flex space-x-2">
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0s"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
-                        <div class="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                        <div class="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                        <div class="w-2 h-2 bg-gray-600 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
                     </div>
                 </div>
             `;
