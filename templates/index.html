@@ -29,6 +29,15 @@
         <!-- Input Area -->
         <div class="bg-white rounded-lg shadow-md p-4">
             <form id="chat-form" class="flex gap-2">
+                <button 
+                    type="button" 
+                    id="voice-input-button"
+                    class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    title="Voice input"
+                    aria-label="Start voice input"
+                >
+                    🎤
+                </button>
                 <input 
                     type="text" 
                     id="message-input" 
@@ -37,6 +46,15 @@
                     autocomplete="off"
                     required
                 >
+                <button 
+                    type="button" 
+                    id="read-aloud-button"
+                    class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    title="Toggle text-to-speech"
+                    aria-label="Toggle automatic reading of responses"
+                >
+                    🔊
+                </button>
                 <button 
                     type="submit" 
                     id="send-button"
@@ -152,6 +170,118 @@
                 messageInput.focus();
             }
         });
+
+        // Text-to-Speech functionality
+        let textToSpeechEnabled = false;
+        let currentSpeech = null;
+        const readAloudButton = document.getElementById('read-aloud-button');
+
+        // Toggle text-to-speech
+        readAloudButton.addEventListener('click', () => {
+            textToSpeechEnabled = !textToSpeechEnabled;
+            readAloudButton.textContent = textToSpeechEnabled ? '🔊' : '🔇';
+            readAloudButton.title = textToSpeechEnabled ? 'Disable text-to-speech' : 'Enable text-to-speech';
+            
+            // Stop current speech if disabling
+            if (!textToSpeechEnabled && currentSpeech) {
+                window.speechSynthesis.cancel();
+            }
+            
+            // Announce state change
+            const announcement = textToSpeechEnabled ? 'Text to speech enabled' : 'Text to speech disabled';
+            speakText(announcement);
+        });
+
+        // Function to speak text
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                // Cancel any ongoing speech
+                window.speechSynthesis.cancel();
+                
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9; // Slightly slower for better clarity
+                utterance.pitch = 1.0;
+                utterance.volume = 1.0;
+                
+                currentSpeech = utterance;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Voice input functionality
+        const voiceInputButton = document.getElementById('voice-input-button');
+        let recognition = null;
+        let isListening = false;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'en-US';
+
+            recognition.onstart = () => {
+                isListening = true;
+                voiceInputButton.textContent = '⏹️';
+                voiceInputButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                voiceInputButton.classList.add('bg-red-600', 'hover:bg-red-700');
+                voiceInputButton.title = 'Stop listening';
+                messageInput.placeholder = 'Listening...';
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                voiceInputButton.textContent = '🎤';
+                voiceInputButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                voiceInputButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                voiceInputButton.title = 'Voice input';
+                messageInput.placeholder = 'Type your message here...';
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                messageInput.value = transcript;
+                messageInput.focus();
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                isListening = false;
+                voiceInputButton.textContent = '🎤';
+                voiceInputButton.classList.remove('bg-red-600', 'hover:bg-red-700');
+                voiceInputButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                messageInput.placeholder = 'Type your message here...';
+                
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    alert('Voice recognition error: ' + event.error);
+                }
+            };
+
+            voiceInputButton.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            // Browser doesn't support speech recognition
+            voiceInputButton.disabled = true;
+            voiceInputButton.title = 'Voice input not supported in this browser';
+        }
+
+        // Modified addMessage to include text-to-speech for bot responses
+        const originalAddMessage = addMessage;
+        addMessage = function(text, isUser) {
+            originalAddMessage(text, isUser);
+            
+            // Read bot responses aloud if enabled
+            if (!isUser && textToSpeechEnabled) {
+                // Small delay to ensure message is visible
+                setTimeout(() => speakText(text), 100);
+            }
+        };
 
         // Focus input on load
         messageInput.focus();
